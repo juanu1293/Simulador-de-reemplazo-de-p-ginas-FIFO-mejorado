@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reemplazo de páginas: segunda oportunidad</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Reemplazo de páginas con bit de referencia</h1>
+    <p class="sub">FIFO mejorado (segunda oportunidad)</p>
+
+    <form method="post" class="card">
+      <label for="refs">Cadena de referencias (números separados por espacios)</label>
+      <input id="refs" name="refs" type="text" value="{{ datos.refs }}" required>
+
+      <label for="marcos">Número de marcos</label>
+      <input id="marcos" name="marcos" type="number" min="1" value="{{ datos.marcos }}" required>
+
+      <button type="submit">Simular</button>
+    </form>
+
+    {% if error %}
+      <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if resultado %}
+      <section class="card">
+        <h2>Simulación paso a paso</h2>
+        <p class="leyenda">
+          Cada celda muestra <b>página (bit)</b>. La celda marcada es donde apunta el puntero.
+        </p>
+        <div class="tabla-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Ref</th>
+                {% for i in range(resultado.n_marcos) %}<th>Marco {{ i + 1 }}</th>{% endfor %}
+                <th>Resultado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for paso in resultado.pasos %}
+              <tr class="{{ 'fallo' if paso.fallo else 'acierto' }}">
+                <td class="ref">{{ paso.ref }}</td>
+                {% for pagina, bit in paso.marcos %}
+                  <td class="{{ 'puntero' if loop.index0 == paso.puntero else '' }}">
+                    {% if pagina is none %}-{% else %}{{ pagina }} ({{ bit }}){% endif %}
+                  </td>
+                {% endfor %}
+                <td>
+                  {% if paso.fallo %}
+                    Fallo{% if paso.victima is not none %} (sale {{ paso.victima }}){% endif %}
+                  {% else %}Acierto{% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card resumen">
+        <h2>Resumen</h2>
+        <div class="stats">
+          <div><span>{{ resultado.total }}</span>referencias</div>
+          <div><span>{{ resultado.fallos }}</span>fallos</div>
+          <div><span>{{ resultado.aciertos }}</span>aciertos</div>
+          <div><span>{{ resultado.fallos_fifo }}</span>fallos con FIFO simple</div>
+        </div>
+      </section>
+    {% endif %}
+  </main>
+</body>
+</html>
